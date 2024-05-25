@@ -47,7 +47,7 @@ function drawCoordinateAxes(): void {
   ctx.stroke();
 }
 
-function isAroundOrigin(pointer: Vector2D): void {
+function isAroundOrigin(pointer: Vector2D): boolean {
   return origin.subtract(pointer).norm() <= 10;
 }
 
