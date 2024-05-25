@@ -23,13 +23,12 @@ window.addEventListener("resize", () => {
   canvas.height = 1;
   CANVAS_WIDTH = canvasWrapperEl.clientWidth;
   CANVAS_HEIGHT = canvasWrapperEl.clientHeight;
-  // origin = new Vector2D(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
 
   canvas.width = CANVAS_WIDTH;
   canvas.height = CANVAS_HEIGHT;
 })
 
-function setup() {
+function setup(): void {
   CANVAS_WIDTH = canvasWrapperEl.clientWidth;
   CANVAS_HEIGHT = canvasWrapperEl.clientHeight;
   origin = new Vector2D(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
@@ -38,7 +37,7 @@ function setup() {
   canvas.height = CANVAS_HEIGHT;
 }
 
-function drawCoordinateAxes() {
+function drawCoordinateAxes(): void {
   ctx.strokeStyle = "black";
   ctx.beginPath();
   ctx.moveTo(-CANVAS_WIDTH / 2, origin.y);
@@ -48,7 +47,7 @@ function drawCoordinateAxes() {
   ctx.stroke();
 }
 
-function isAroundOrigin(pointer: Vector2D) {
+function isAroundOrigin(pointer: Vector2D): void {
   return origin.subtract(pointer).norm() <= 10;
 }
 
@@ -134,7 +133,7 @@ canvas.addEventListener("pointerup", () => {
   })
 })
 
-function update() {
+function update(): void {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   if (isHoldingCanvas) {
@@ -157,7 +156,7 @@ function update() {
   })
 }
 
-function mainLoop(timestamp: number) {
+function mainLoop(timestamp: number): void {
   requestAnimationFrame(mainLoop);
 
   deltaTime = timestamp - prevTimestamp;
