@@ -40,11 +40,13 @@ body {
 
 canvas {
   --scale: 50px;
+  --x-origin: calc(50% + var(--scale)/2);
+  --y-origin: calc(50% + var(--scale)/2);
   touch-action: none;
   display: block;
   background-image: 
     linear-gradient(to right, lightgray 1px, transparent 1px),
     linear-gradient(to bottom, lightgray 1px, transparent 1px);
-  background-position: calc(50% + var(--scale)/2) calc(50% + var(--scale)/2);
+  background-position: var(--x-origin) var(--y-origin);
   background-size: var(--scale) var(--scale);
 }

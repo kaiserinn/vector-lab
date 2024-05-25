@@ -11,9 +11,10 @@ const vectorLineSegments: VectorLineSegment[] = [];
 const pointer = new Vector2D(0, 0);
 let isDrawing = false;
 let selectedVector = -1;
+let isHoldingCanvas = false;
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-let canvasRect = canvas.getBoundingClientRect();
+const canvasRect = canvas.getBoundingClientRect();
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 const canvasWrapperEl = document.querySelector(".canvas-wrapper") as HTMLDivElement;
 
@@ -22,7 +23,7 @@ window.addEventListener("resize", () => {
   canvas.height = 1;
   CANVAS_WIDTH = canvasWrapperEl.clientWidth;
   CANVAS_HEIGHT = canvasWrapperEl.clientHeight;
-  origin = new Vector2D(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+  // origin = new Vector2D(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
 
   canvas.width = CANVAS_WIDTH;
   canvas.height = CANVAS_HEIGHT;
@@ -52,8 +53,17 @@ function isAroundOrigin(pointer: Vector2D) {
 }
 
 canvas.addEventListener("pointermove", e => {
+  let dPointer = new Vector2D(e.clientX - canvasRect.x - pointer.x, e.clientY - canvasRect.y - pointer.y)
+
   pointer.x = e.clientX - canvasRect.x;
   pointer.y = e.clientY - canvasRect.y;
+
+  if (isHoldingCanvas) {
+    origin.x += dPointer.x;
+    origin.y += dPointer.y;
+    canvas.style.cursor = "grabbing";;
+    return;
+  }
 
   for (let vectorLineSegment of vectorLineSegments) {
     let cursorStyle = 
@@ -80,21 +90,28 @@ canvas.addEventListener("pointerdown", () => {
   if (isAroundOrigin(pointer)) {
     isDrawing = true;
     canvas.style.cursor = "grabbing";
+    return;
   }
 
-  vectorLineSegments.forEach((vectorLineSegment, i) => {
-    if (vectorLineSegment.isAroundVector(pointer)) {
+  for (let i = 0; i < vectorLineSegments.length; i++) {
+    const lineSegment = vectorLineSegments[i];
+
+    if (lineSegment.isAroundVector(pointer)) {
       if (selectedVector !== -1) {
         vectorLineSegments[selectedVector].color = "black";
       }
-      vectorLineSegment.isHeld = true;
+      lineSegment.isHeld = true;
+      lineSegment.color = "red";
       selectedVector = i;
-      vectorLineSegment.color = "red";
       canvas.style.cursor = "grabbing";
-    } else {
-      vectorLineSegment.color = "black";
+      break;
     }
-  })
+
+    selectedVector = -1;
+    lineSegment.color = "black";
+  }
+
+  isHoldingCanvas = selectedVector === -1 ? true : false;
 })
 
 canvas.addEventListener("pointerup", () => {
@@ -108,6 +125,7 @@ canvas.addEventListener("pointerup", () => {
     vectorLineSegments.push(new VectorLineSegment(origin, origin.subtract(pointer)));
   }
   isDrawing = false;
+  isHoldingCanvas = false;
 
   vectorLineSegments.forEach(vectorLineSegment => {
     if (vectorLineSegment.isHeld) {
@@ -118,6 +136,11 @@ canvas.addEventListener("pointerup", () => {
 
 function update() {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  if (isHoldingCanvas) {
+    canvas.style.setProperty("--x-origin", origin.x + "px")
+    canvas.style.setProperty("--y-origin", origin.y + "px")
+  }
 
   drawCoordinateAxes();
 
