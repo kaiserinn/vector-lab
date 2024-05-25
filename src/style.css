@@ -1,0 +1,50 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");
+
+/* CSS Reset */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: JetBrains Mono;
+  font-size: 16px;
+}
+
+:root {
+  --latte-base: #eff1f5;
+  --latte-text: #4c4f69;
+  --latte-mauve: #8839ef;
+  --latte-green: #40a02b;
+  --latte-maroon: #e64553;
+
+  --macchiato-base: #303446;
+  --macchiato-text: #cad3f5;
+  --macchiato-mauve: #c6a0f6;
+}
+
+body {
+  height: 100vh;
+  display: flex;
+}
+
+.sidebar {
+  width: 20rem;
+  position: sticky;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.canvas-wrapper {
+  flex-grow: 1;
+}
+
+canvas {
+  --scale: 50px;
+  touch-action: none;
+  display: block;
+  background-image: 
+    linear-gradient(to right, lightgray 1px, transparent 1px),
+    linear-gradient(to bottom, lightgray 1px, transparent 1px);
+  background-position: calc(50% + var(--scale)/2) calc(50% + var(--scale)/2);
+  background-size: var(--scale) var(--scale);
+}
