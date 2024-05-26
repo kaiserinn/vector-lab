@@ -60,6 +60,7 @@ canvas {
   height: 4rem;
   flex-shrink: 0;
   margin-right: 2px;
+  position: relative;
 }
 
 .vector-index {
@@ -67,6 +68,7 @@ canvas {
   background-color: lightgray;
   border-bottom: 1px solid gray;
   padding-left: .2em;
+  cursor: pointer;
 }
 
 .vector-input {
@@ -82,9 +84,18 @@ canvas {
   outline: none;
 }
 
+.vector-remove {
+  font-size: 20px;
+  user-select: none;
+  position: absolute;
+  top: .2rem;
+  right: .2rem;
+  cursor: pointer;
+  z-index: 9999;
+}
+
 .vectors-is-focused {
   outline: 2px solid cornflowerblue;
-  position: relative;
   z-index: 999;
 }
 

@@ -7,11 +7,12 @@ let origin: Vector2D;
 const SCALE = 50;
 let prevTimestamp = 0;
 let deltaTime: number;
-const vectorLineSegments: VectorLineSegment[] = [];
+let vectorLineSegments: VectorLineSegment[] = [];
 const pointer = new Vector2D(0, 0);
 let isDrawing = false;
 let selectedVector = -1;
 let isHoldingCanvas = false;
+let lastIndex = -1;
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const canvasRect = canvas.getBoundingClientRect();
@@ -54,36 +55,43 @@ function isAroundOrigin(pointer: Vector2D): boolean {
 }
 
 function renderFromTemplate(lineSegment: VectorLineSegment): void {
-  const index = vectorLineSegments.length;
-  const template = document.querySelector<HTMLTemplateElement>("#vector-template");
-  const clone = template!.content.cloneNode(true) as DocumentFragment;
+  let id = lastIndex;
+  const template = document.querySelector<HTMLTemplateElement>("#vector-template")!;
+  const clone = template.content.cloneNode(true) as DocumentFragment;
 
-  const vectorsEl = clone.querySelector<HTMLDivElement>(".vectors");
-  const vectorIndexEl = clone.querySelector<HTMLDivElement>(".vector-index");
-  vectorIndexEl!.innerText = String(index);
+  const vectorsEl = clone.querySelector<HTMLDivElement>(".vectors")!;
+  const vectorIndexEl = clone.querySelector<HTMLLabelElement>(".vector-index")!;
+  vectorIndexEl.setAttribute("for", `vector-${id}`);
+  vectorIndexEl.innerText = String(id+1);
 
-  const vectorInputEl = clone.querySelector<HTMLInputElement>(".vector-input");
-  vectorInputEl!.value = `[${-lineSegment.vector.x/SCALE}, ${lineSegment.vector.y/SCALE}]`
+  const vectorInputEl = clone.querySelector<HTMLInputElement>(".vector-input")!;
+  vectorInputEl.setAttribute("id", `vector-${id}`);
+  vectorInputEl.value = `[${-lineSegment.vector.x/SCALE}, ${lineSegment.vector.y/SCALE}]`;
 
-  vectorInputEl!.addEventListener("change", () => {
-    const parsedInput = JSON.parse(vectorInputEl!.value);
+  vectorInputEl.addEventListener("change", () => {
+    const parsedInput = JSON.parse(vectorInputEl.value);
     const newVector = new Vector2D(-parsedInput[0] * SCALE, parsedInput[1] * SCALE);
     lineSegment.vector = newVector;
   })
 
-  vectorInputEl!.addEventListener("focus", () => {
-    selectedVector = index-1;
-    vectorsEl!.classList.add("vectors-is-focused");
-    vectorIndexEl!.classList.add("index-is-focused");
+  vectorInputEl.addEventListener("focus", () => {
+    selectedVector = id;
+    vectorsEl.classList.add("vectors-is-focused");
+    vectorIndexEl.classList.add("index-is-focused");
   })
-  vectorInputEl!.addEventListener("focusout", () => {
+  vectorInputEl.addEventListener("focusout", () => {
     selectedVector = -1;
-    vectorsEl!.classList.remove("vectors-is-focused");
-    vectorIndexEl!.classList.remove("index-is-focused");
+    vectorsEl.classList.remove("vectors-is-focused");
+    vectorIndexEl.classList.remove("index-is-focused");
   })
 
-  const sidebarEl = document.querySelector<HTMLDivElement>(".sidebar");
-  sidebarEl!.appendChild(clone);
+  clone.querySelector<HTMLSpanElement>(".vector-remove")?.addEventListener("click", () => {
+    vectorsEl.remove();
+    vectorLineSegments = vectorLineSegments.filter(lineSegment => lineSegment.id !== id)
+  })
+
+  const sidebarEl = document.querySelector<HTMLDivElement>(".sidebar")!;
+  sidebarEl.appendChild(clone);
 }
 
 canvas.addEventListener("pointermove", e => {
@@ -132,7 +140,7 @@ canvas.addEventListener("pointerdown", () => {
 
     if (lineSegment.isAroundVector(pointer)) {
       lineSegment.isHeld = true;
-      selectedVector = i;
+      selectedVector = lineSegment.id;
       canvas.style.cursor = "grabbing";
       break;
     }
@@ -151,8 +159,9 @@ canvas.addEventListener("pointerup", () => {
   }
 
   if (isDrawing) {
-    const lineSegment = new VectorLineSegment(origin, origin.subtract(pointer));
+    const lineSegment = new VectorLineSegment(lastIndex+1, origin, origin.subtract(pointer));
     vectorLineSegments.push(lineSegment);
+    lastIndex += 1;
     renderFromTemplate(lineSegment);
   }
   isDrawing = false;
@@ -176,16 +185,27 @@ function update(): void {
   drawCoordinateAxes();
 
   if (isDrawing) {
-    new VectorLineSegment(origin, origin.subtract(pointer)).draw(ctx);
+    new VectorLineSegment(Infinity, origin, origin.subtract(pointer)).draw(ctx);
   }
 
-  vectorLineSegments.forEach((lineSegment, i) => {
-    lineSegment.color = selectedVector === i ? "cornflowerblue" : "black";
+  vectorLineSegments.forEach(lineSegment => {
+    lineSegment.color = selectedVector === lineSegment.id ? "cornflowerblue" : "black";
+
+    const input = document.querySelector<HTMLInputElement>(`#vector-${lineSegment.id}`)!
+    const vectorsEl = input.closest(".vectors")!;
+    const vectorIndexEl = vectorsEl.childNodes[1] as HTMLLabelElement;
+    if (selectedVector === lineSegment.id) {
+      vectorsEl.classList.add("vectors-is-focused");
+      vectorIndexEl.classList.add("index-is-focused");
+    } else {
+      vectorsEl.classList.remove("vectors-is-focused");
+      vectorIndexEl.classList.remove("index-is-focused");
+    }
 
     if (lineSegment.isHeld) {
       const vector = origin.subtract(pointer);
       lineSegment.vector = vector;
-      const vectorInputEl = document.querySelectorAll<HTMLInputElement>(".vector-input")[i];
+      const vectorInputEl = document.querySelector<HTMLInputElement>(`#vector-${lineSegment.id}`)!;
       vectorInputEl.value = `[${-vector.x/SCALE}, ${vector.y/SCALE}]`;
     }
     lineSegment.updateOrigin(origin);

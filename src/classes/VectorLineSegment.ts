@@ -1,13 +1,15 @@
 import { Vector2D } from './Vector';
 
 export class VectorLineSegment {
+  public id: number;
   public vector: Vector2D;
   public headPos: Vector2D;
   public origin: Vector2D;
   public color: string;
   public isHeld: boolean;
 
-  public constructor(origin: Vector2D, vector: Vector2D, { color }: { color: string } = { color: "black" }) {
+  public constructor(id: number, origin: Vector2D, vector: Vector2D, { color }: { color: string } = { color: "black" }) {
+    this.id = id;
     this.vector = vector;
     this.origin = origin;
     this.headPos = origin.subtract(this.vector);
