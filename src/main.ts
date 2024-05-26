@@ -72,10 +72,12 @@ function renderFromTemplate(lineSegment: VectorLineSegment): void {
   })
 
   vectorInputEl!.addEventListener("focus", () => {
+    selectedVector = index-1;
     vectorsEl!.classList.add("vectors-is-focused");
     vectorIndexEl!.classList.add("index-is-focused");
   })
   vectorInputEl!.addEventListener("focusout", () => {
+    selectedVector = -1;
     vectorsEl!.classList.remove("vectors-is-focused");
     vectorIndexEl!.classList.remove("index-is-focused");
   })
@@ -129,18 +131,13 @@ canvas.addEventListener("pointerdown", () => {
     const lineSegment = vectorLineSegments[i];
 
     if (lineSegment.isAroundVector(pointer)) {
-      if (selectedVector !== -1) {
-        vectorLineSegments[selectedVector].color = "black";
-      }
       lineSegment.isHeld = true;
-      lineSegment.color = "cornflowerblue";
       selectedVector = i;
       canvas.style.cursor = "grabbing";
       break;
     }
 
     selectedVector = -1;
-    lineSegment.color = "black";
   }
 
   isHoldingCanvas = selectedVector === -1;
@@ -154,8 +151,9 @@ canvas.addEventListener("pointerup", () => {
   }
 
   if (isDrawing) {
-    vectorLineSegments.push(new VectorLineSegment(origin, origin.subtract(pointer)));
-    renderFromTemplate(vectorLineSegments[vectorLineSegments.length-1]);
+    const lineSegment = new VectorLineSegment(origin, origin.subtract(pointer));
+    vectorLineSegments.push(lineSegment);
+    renderFromTemplate(lineSegment);
   }
   isDrawing = false;
   isHoldingCanvas = false;
@@ -181,15 +179,17 @@ function update(): void {
     new VectorLineSegment(origin, origin.subtract(pointer)).draw(ctx);
   }
 
-  vectorLineSegments.forEach((vectorLineSegment, i) => {
-    if (vectorLineSegment.isHeld) {
+  vectorLineSegments.forEach((lineSegment, i) => {
+    lineSegment.color = selectedVector === i ? "cornflowerblue" : "black";
+
+    if (lineSegment.isHeld) {
       const vector = origin.subtract(pointer);
-      vectorLineSegment.vector = vector;
+      lineSegment.vector = vector;
       const vectorInputEl = document.querySelectorAll<HTMLInputElement>(".vector-input")[i];
       vectorInputEl.value = `[${-vector.x/SCALE}, ${vector.y/SCALE}]`;
     }
-    vectorLineSegment.updateOrigin(origin);
-    vectorLineSegment.draw(ctx);
+    lineSegment.updateOrigin(origin);
+    lineSegment.draw(ctx);
   })
 }
 
