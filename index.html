@@ -8,13 +8,22 @@
   </head>
   <body>
     <div class="sidebar">
-      <div class="vectors">
+      <div class="header">
+        <div class="title">Vectors</div>
       </div>
     </div>
 
     <div class="canvas-wrapper">
       <canvas id="canvas"></canvas>
     </div>
+
+    <template id="vector-template">
+      <div class="vectors">
+        <div class="vector-index"></div>
+        <input type="text" class="vector-input">
+      </div>
+    </template>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

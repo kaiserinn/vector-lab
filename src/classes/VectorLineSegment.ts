@@ -1,9 +1,9 @@
 import { Vector2D } from './Vector';
 
 export class VectorLineSegment {
-  private vector: Vector2D;
-  private headPos: Vector2D;
-  private origin: Vector2D;
+  public vector: Vector2D;
+  public headPos: Vector2D;
+  public origin: Vector2D;
   public color: string;
   public isHeld: boolean;
 
@@ -33,10 +33,6 @@ export class VectorLineSegment {
 
   public isAroundVector(pointer: Vector2D): boolean {
     return this.headPos.subtract(pointer).norm() <= 10;
-  }
-
-  public updateVector(pointer: Vector2D): void {
-    this.vector = pointer;
   }
 
   public updateOrigin(origin: Vector2D): void {

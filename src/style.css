@@ -28,12 +28,6 @@ body {
   display: flex;
 }
 
-.sidebar {
-  width: 20rem;
-  position: sticky;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-}
-
 .canvas-wrapper {
   flex-grow: 1;
 }
@@ -49,4 +43,69 @@ canvas {
     linear-gradient(to bottom, lightgray 1px, transparent 1px);
   background-position: var(--x-origin) var(--y-origin);
   background-size: var(--scale) var(--scale);
+}
+
+.sidebar {
+  width: 20rem;
+  position: sticky;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  overflow: auto;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.vectors {
+  display: flex;
+  height: 4rem;
+  flex-shrink: 0;
+  margin-right: 2px;
+}
+
+.vector-index {
+  width: 2rem;
+  background-color: lightgray;
+  border-bottom: 1px solid gray;
+  padding-left: .2em;
+}
+
+.vector-input {
+  box-sizing: content-box;
+  flex-grow: 1;
+  padding: 0 1rem;
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid gray;
+}
+
+.vector-input:focus {
+  outline: none;
+}
+
+.vectors-is-focused {
+  outline: 2px solid cornflowerblue;
+  position: relative;
+  z-index: 999;
+}
+
+.index-is-focused {
+  background-color: cornflowerblue;
+  color: white;
+}
+
+.header {
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  background-color: lightgray;
+  border-bottom: 1px solid gray;
+}
+
+.add-button {
+  font-size: 40px;
+}
+
+.title {
+  text-align: center;
+  flex-grow: 1;
 }
