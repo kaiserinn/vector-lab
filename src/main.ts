@@ -12,14 +12,18 @@ const pointer = new Vector2D(0, 0);
 let isDrawing = false;
 let selectedVector = -1;
 let isHoldingCanvas = false;
+let isResizing = false;
 let lastIndex = -1;
 
-const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-const canvasRect = canvas.getBoundingClientRect();
-const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-const canvasWrapperEl = document.querySelector(".canvas-wrapper") as HTMLDivElement;
+const canvas = document.querySelector<HTMLCanvasElement>("canvas")!;
+let canvasRect = canvas.getBoundingClientRect();
+const ctx: CanvasRenderingContext2D = canvas.getContext("2d")!;
+const canvasWrapperEl = document.querySelector<HTMLDivElement>(".canvas-wrapper")!;
+const sidebarEl = document.querySelector<HTMLDivElement>(".sidebar")!;
 
-window.addEventListener("resize", () => {
+window.addEventListener("resize", resize);
+
+function resize(): void {
   canvas.width = 1;
   canvas.height = 1;
   CANVAS_WIDTH = canvasWrapperEl.clientWidth;
@@ -27,7 +31,7 @@ window.addEventListener("resize", () => {
 
   canvas.width = CANVAS_WIDTH;
   canvas.height = CANVAS_HEIGHT;
-})
+}
 
 function setup(): void {
   CANVAS_WIDTH = canvasWrapperEl.clientWidth;
@@ -66,7 +70,9 @@ function renderFromTemplate(lineSegment: VectorLineSegment): void {
 
   const vectorInputEl = clone.querySelector<HTMLInputElement>(".vector-input")!;
   vectorInputEl.setAttribute("id", `vector-${id}`);
-  vectorInputEl.value = `[${-lineSegment.vector.x/SCALE}, ${lineSegment.vector.y/SCALE}]`;
+  let vectorX = Math.round(-lineSegment.vector.x/SCALE * 100) / 100
+  let vectorY = Math.round(lineSegment.vector.y/SCALE * 100) / 100
+  vectorInputEl.value = `[${vectorX}, ${vectorY}]`;
 
   vectorInputEl.addEventListener("change", () => {
     const parsedInput = JSON.parse(vectorInputEl.value);
@@ -90,9 +96,46 @@ function renderFromTemplate(lineSegment: VectorLineSegment): void {
     vectorLineSegments = vectorLineSegments.filter(lineSegment => lineSegment.id !== id)
   })
 
-  const sidebarEl = document.querySelector<HTMLDivElement>(".sidebar")!;
   sidebarEl.appendChild(clone);
 }
+
+function isAroundSidebar(x: number): boolean {
+  const sidebarWidth = sidebarEl.clientWidth;
+  const threshold = 10;
+  return (
+    x >= sidebarWidth - threshold &&
+    x <= sidebarWidth + threshold
+  )
+}
+
+window.addEventListener("pointermove", e => {
+  pointer.x = e.clientX - canvasRect.x;
+  pointer.y = e.clientY - canvasRect.y;
+
+  if (isAroundSidebar(e.clientX)) {
+    sidebarEl.style.cursor = "ew-resize";
+    canvas.style.cursor = "ew-resize";
+  } else {
+    sidebarEl.style.cursor = "default";
+  }
+
+  if (isResizing) {
+    sidebarEl.style.width = pointer.x + canvasRect.x + "px";
+    canvasRect = canvas.getBoundingClientRect();
+    sidebarEl.style.cursor = "ew-resize";
+    canvas.style.cursor = "ew-resize";
+    resize();
+  }
+})
+
+window.addEventListener("pointerdown", e => {
+  isResizing = isAroundSidebar(e.clientX);
+})
+
+window.addEventListener("pointerup", () => {
+  isResizing = false;
+  sidebarEl.style.cursor = "default";
+})
 
 canvas.addEventListener("pointermove", e => {
   let dPointer = new Vector2D(e.clientX - canvasRect.x - pointer.x, e.clientY - canvasRect.y - pointer.y)
@@ -103,7 +146,7 @@ canvas.addEventListener("pointermove", e => {
   if (isHoldingCanvas) {
     origin.x += dPointer.x;
     origin.y += dPointer.y;
-    canvas.style.cursor = "grabbing";;
+    canvas.style.cursor = "grabbing";
     return;
   }
 
@@ -128,7 +171,7 @@ canvas.addEventListener("pointermove", e => {
   }
 })
 
-canvas.addEventListener("pointerdown", () => {
+canvas.addEventListener("pointerdown", e => {
   if (isAroundOrigin(pointer)) {
     isDrawing = true;
     canvas.style.cursor = "grabbing";
@@ -148,7 +191,7 @@ canvas.addEventListener("pointerdown", () => {
     selectedVector = -1;
   }
 
-  isHoldingCanvas = selectedVector === -1;
+  isHoldingCanvas = selectedVector === -1 && !isAroundSidebar(e.clientX);
 })
 
 canvas.addEventListener("pointerup", () => {
@@ -182,11 +225,11 @@ function update(): void {
     canvas.style.setProperty("--y-origin", origin.y + "px")
   }
 
-  drawCoordinateAxes();
-
   if (isDrawing) {
     new VectorLineSegment(Infinity, origin, origin.subtract(pointer)).draw(ctx);
   }
+
+  drawCoordinateAxes();
 
   vectorLineSegments.forEach(lineSegment => {
     lineSegment.color = selectedVector === lineSegment.id ? "cornflowerblue" : "black";

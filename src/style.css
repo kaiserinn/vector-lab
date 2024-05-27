@@ -47,6 +47,8 @@ canvas {
 
 .sidebar {
   width: 20rem;
+  min-width: 18rem;
+  max-width: 80vw;
   position: sticky;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   overflow: auto;
@@ -119,4 +121,5 @@ canvas {
 .title {
   text-align: center;
   flex-grow: 1;
+  user-select: none;
 }
